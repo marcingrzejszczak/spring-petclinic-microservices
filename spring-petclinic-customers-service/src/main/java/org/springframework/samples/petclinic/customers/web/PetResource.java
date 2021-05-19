@@ -51,7 +51,7 @@ class PetResource {
     public Pet processCreationForm(
         @RequestBody PetRequest petRequest,
         @PathVariable("ownerId") int ownerId) {
-
+        log.info("Creating a pet request {} for owner {}", petRequest, ownerId);
         final Pet pet = new Pet();
         final Optional<Owner> optionalOwner = ownerRepository.findById(ownerId);
         Owner owner = optionalOwner.orElseThrow(() -> new ResourceNotFoundException("Owner "+ownerId+" not found"));
@@ -63,13 +63,13 @@ class PetResource {
     @PutMapping("/owners/*/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void processUpdateForm(@RequestBody PetRequest petRequest) {
+        log.info("Processing update form for request {}", petRequest);
         int petId = petRequest.getId();
         Pet pet = findPetById(petId);
         save(pet, petRequest);
     }
 
     private Pet save(final Pet pet, final PetRequest petRequest) {
-
         pet.setName(petRequest.getName());
         pet.setBirthDate(petRequest.getBirthDate());
 

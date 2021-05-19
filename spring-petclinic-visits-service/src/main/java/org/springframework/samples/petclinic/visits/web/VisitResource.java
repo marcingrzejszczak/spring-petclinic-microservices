@@ -61,11 +61,13 @@ class VisitResource {
 
     @GetMapping("owners/*/pets/{petId}/visits")
    public List<Visit> visits(@PathVariable("petId") int petId) {
+        log.info("Retrieving all visits for id {}", petId);
         return visitRepository.findByPetId(petId);
     }
 
     @GetMapping("pets/visits")
    public Visits visitsMultiGet(@RequestParam("petId") List<Integer> petIds) {
+        log.info("Retrieving all visits for ids {}", petIds);
         final List<Visit> byPetIdIn = visitRepository.findByPetIdIn(petIds);
         return new Visits(byPetIdIn);
     }
