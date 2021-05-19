@@ -15,9 +15,22 @@
  */
 package org.springframework.samples.petclinic.customers;
 
+import java.nio.file.AccessDeniedException;
+import java.sql.SQLException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.dao.DataAccessException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
  * @author Maciej Szarlinski
@@ -26,7 +39,21 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @SpringBootApplication
 public class CustomersServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(CustomersServiceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(CustomersServiceApplication.class, args);
+    }
+
+
+}
+
+@ControllerAdvice
+@Slf4j
+class ControllerExceptionHandler {
+
+    @ExceptionHandler(value = Exception.class)
+    public HttpServletResponse accessDeniedError(Exception exception) throws Exception {
+        log.error("Exception! [" + exception.getMessage() + "]", exception);
+        throw exception;
+    }
+
 }

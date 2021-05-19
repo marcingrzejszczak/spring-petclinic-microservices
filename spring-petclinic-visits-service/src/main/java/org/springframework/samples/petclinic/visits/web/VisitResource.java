@@ -16,15 +16,18 @@
 package org.springframework.samples.petclinic.visits.web;
 
 import java.util.List;
+import java.util.function.Supplier;
+
 import javax.validation.Valid;
 
 import io.micrometer.core.annotation.Timed;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.samples.petclinic.visits.model.Visit;
-import org.springframework.samples.petclinic.visits.model.VisitRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,13 +43,15 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Michael Isvy
  * @author Maciej Szarlinski
  */
+@AllArgsConstructor
 @RestController
-@RequiredArgsConstructor
 @Slf4j
 @Timed("petclinic.visit")
 class VisitResource {
 
-    private final VisitRepository visitRepository;
+    private final VisitDao visitDao;
+
+    private final CustomerClient customerClient;
 
     @PostMapping("owners/*/pets/{petId}/visits")
     @ResponseStatus(HttpStatus.CREATED)
@@ -56,19 +61,21 @@ class VisitResource {
 
         visit.setPetId(petId);
         log.info("Saving visit {}", visit);
-        return visitRepository.save(visit);
+        return visitDao.create(visit, petId);
     }
 
     @GetMapping("owners/*/pets/{petId}/visits")
    public List<Visit> visits(@PathVariable("petId") int petId) {
         log.info("Retrieving all visits for id {}", petId);
-        return visitRepository.findByPetId(petId);
+        customerClient.callOwnerForAccount();
+        return visitDao.visits(petId);
     }
 
     @GetMapping("pets/visits")
    public Visits visitsMultiGet(@RequestParam("petId") List<Integer> petIds) {
         log.info("Retrieving all visits for ids {}", petIds);
-        final List<Visit> byPetIdIn = visitRepository.findByPetIdIn(petIds);
+        customerClient.callOwnerForAccount();
+        final List<Visit> byPetIdIn =  visitDao.visitsMultiGet(petIds);
         return new Visits(byPetIdIn);
     }
 

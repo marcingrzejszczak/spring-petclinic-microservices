@@ -1,0 +1,6 @@
+management.metrics.export.wavefront:
+  api-token: ${WAVEFRONT_API_TOKEN}
+  uri: ${WAVEFRONT_URI:https://longboard.wavefront.com}
+wavefront.application:
+  name: petclinic
+  service: ${spring.application.name}

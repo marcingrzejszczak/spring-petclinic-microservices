@@ -5,6 +5,7 @@
     <jmxConfigurator/>
 
     <springProfile name="logzio">
+        <springProperty scope="context" name="springAppName" source="spring.application.name"/>
         <!-- Use shutdownHook so that we can close gracefully and finish the log drain -->
         <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
         <appender name="LogzioLogbackAppender" class="io.logz.logback.LogzioLogbackAppender">

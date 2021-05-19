@@ -1,4 +1,13 @@
 {
-    "exceptionsActive": true,
-    "level" : 2
+  "exceptionsActive": true,
+  "level": 2,
+  "exception": {
+    "type": "java.lang.IllegalStateException",
+    "arguments": [
+      {
+        "className": "java.lang.String",
+        "value": "Database instance is down!"
+      }
+    ]
+  }
 }

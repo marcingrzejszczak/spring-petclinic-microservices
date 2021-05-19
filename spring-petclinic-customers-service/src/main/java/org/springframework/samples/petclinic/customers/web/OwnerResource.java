@@ -15,19 +15,27 @@
  */
 package org.springframework.samples.petclinic.customers.web;
 
-import io.micrometer.core.annotation.Timed;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.core.log.LogAccessor;
-import org.springframework.http.HttpStatus;
-import org.springframework.samples.petclinic.customers.model.Owner;
-import org.springframework.samples.petclinic.customers.model.OwnerRepository;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
+
+import javax.validation.Valid;
+
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.samples.petclinic.customers.model.Owner;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Juergen Hoeller
@@ -38,12 +46,19 @@ import java.util.Optional;
  */
 @RequestMapping("/owners")
 @RestController
-@Timed("petclinic.owner")
-@RequiredArgsConstructor
+@Timed(value = "petclinic.owner", percentiles = {0.95, 0.99, 0.9999 }, histogram = true)
 @Slf4j
 class OwnerResource {
 
-    private final OwnerRepository ownerRepository;
+    private final OwnerDao ownerDao;
+
+    private final Timer timer;
+
+    OwnerResource(OwnerDao ownerDao, MeterRegistry meterRegistry) {
+        this.ownerDao = ownerDao;
+        this.timer = meterRegistry
+            .timer("petclinic.owner.db");
+    }
 
     /**
      * Create Owner
@@ -52,7 +67,7 @@ class OwnerResource {
     @ResponseStatus(HttpStatus.CREATED)
     public Owner createOwner(@Valid @RequestBody Owner owner) {
         log.info("Creating owner {}", owner);
-        return ownerRepository.save(owner);
+        return ownerDao.createOwner(owner);
     }
 
     /**
@@ -61,7 +76,16 @@ class OwnerResource {
     @GetMapping(value = "/{ownerId}")
     public Optional<Owner> findOwner(@PathVariable("ownerId") int ownerId) {
         log.info("Finding owner via id {}", ownerId);
-        return ownerRepository.findById(ownerId);
+        return ownerDao.findOwner(ownerId);
+    }
+
+    /**
+     * Slow resource
+     */
+    @GetMapping(value = "/{ownerId}/account")
+    public String account(@PathVariable("ownerId") int ownerId) {
+        log.info("Retrieving owner account from the database");
+        return ownerDao.getAccountInformation(ownerId);
     }
 
     /**
@@ -70,7 +94,7 @@ class OwnerResource {
     @GetMapping
     public List<Owner> findAll() {
         log.info("Finding all owners");
-        return ownerRepository.findAll();
+        return wrap(ownerDao::findAll);
     }
 
     /**
@@ -80,9 +104,9 @@ class OwnerResource {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateOwner(@PathVariable("ownerId") int ownerId, @Valid @RequestBody Owner ownerRequest) {
         log.info("Updating owner with id {}", ownerId);
-        final Optional<Owner> owner = ownerRepository.findById(ownerId);
+        final Optional<Owner> owner = ownerDao.findOwner(ownerId);
 
-        final Owner ownerModel = owner.orElseThrow(() -> new ResourceNotFoundException("Owner "+ownerId+" not found"));
+        final Owner ownerModel = owner.orElseThrow(() -> new ResourceNotFoundException("Owner " + ownerId + " not found"));
         // This is done by hand for simplicity purpose. In a real life use-case we should consider using MapStruct.
         ownerModel.setFirstName(ownerRequest.getFirstName());
         ownerModel.setLastName(ownerRequest.getLastName());
@@ -90,6 +114,10 @@ class OwnerResource {
         ownerModel.setAddress(ownerRequest.getAddress());
         ownerModel.setTelephone(ownerRequest.getTelephone());
         log.info("Saving owner {}", ownerModel);
-        ownerRepository.save(ownerModel);
+        this.timer.wrap(() -> ownerDao.saveOwner(ownerModel));
+    }
+
+    private <T> T wrap(Supplier<T> supplier) {
+        return this.timer.wrap(supplier).get();
     }
 }

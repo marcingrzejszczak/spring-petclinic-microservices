@@ -15,7 +15,10 @@
  */
 package org.springframework.samples.petclinic.customers.model;
 
+import io.micrometer.core.annotation.Timed;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * Repository class for <code>Owner</code> domain objects All method names are compliant with Spring Data naming

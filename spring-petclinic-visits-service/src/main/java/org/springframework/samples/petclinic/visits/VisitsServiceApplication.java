@@ -15,9 +15,16 @@
  */
 package org.springframework.samples.petclinic.visits;
 
+import java.time.Duration;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * @author Maciej Szarlinski
@@ -28,5 +35,14 @@ public class VisitsServiceApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(VisitsServiceApplication.class, args);
+    }
+
+    @Bean
+    @LoadBalanced
+    RestTemplate loadBalancedRestTemplate() {
+        final SimpleClientHttpRequestFactory simpleClientHttpRequestFactory = new SimpleClientHttpRequestFactory();
+        simpleClientHttpRequestFactory.setConnectTimeout(10_000);
+        simpleClientHttpRequestFactory.setReadTimeout(10_000);
+        return new RestTemplate(simpleClientHttpRequestFactory);
     }
 }
