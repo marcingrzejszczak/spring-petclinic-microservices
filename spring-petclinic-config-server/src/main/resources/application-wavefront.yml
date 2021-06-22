@@ -1,6 +1,6 @@
 management.metrics.export.wavefront:
   api-token: ${WAVEFRONT_API_TOKEN}
-  uri: ${WAVEFRONT_URI:https://longboard.wavefront.com}
+  uri: ${WAVEFRONT_URI:https://vmware.wavefront.com}
 wavefront.application:
-    name: petclinic
+    name: petclinic-microservices-spring-one
     service: ${spring.application.name}

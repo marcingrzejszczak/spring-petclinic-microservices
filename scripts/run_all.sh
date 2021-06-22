@@ -34,3 +34,4 @@ nohup java -jar spring-petclinic-api-gateway/target/*.jar --server.port=8080 ${S
 nohup java -jar spring-petclinic-admin-server/target/*.jar --server.port=9090 ${SWITCHES} > target/admin-server.log 2>&1 &
 echo "Waiting for apps to start"
 sleep 60
+echo "Apps should be running"
