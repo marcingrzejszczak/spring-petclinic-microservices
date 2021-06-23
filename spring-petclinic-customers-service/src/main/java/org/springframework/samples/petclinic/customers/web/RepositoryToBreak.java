@@ -39,7 +39,7 @@ import org.springframework.stereotype.Service;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-@Timed(value = "petclinic.owner.db", percentiles = { 0.95, 0.99, 0.9999 }, histogram = true)
+@Timed(value = "petclinic.owner.db.account", histogram = true)
 class RepositoryToBreak {
 
     private final Random random = new Random();
@@ -48,7 +48,7 @@ class RepositoryToBreak {
 
     public String getAccountInformation(int ownerId) {
         try {
-            Thread.sleep(11_000 + Math.abs(random.nextInt(2000)));
+            Thread.sleep(9_000 + Math.abs(random.nextInt(2000)));
         }
         catch (InterruptedException e) {
             throw new IllegalStateException(e);

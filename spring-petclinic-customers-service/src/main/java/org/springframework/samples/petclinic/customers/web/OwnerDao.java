@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Timed("petclinic.owner.db")
+@Timed("petclinic.owner.dao")
 class OwnerDao {
 
     private final OwnerRepository ownerRepository;

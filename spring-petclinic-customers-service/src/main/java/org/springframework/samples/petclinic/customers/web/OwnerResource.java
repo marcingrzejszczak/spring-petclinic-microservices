@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequestMapping("/owners")
 @RestController
-@Timed(value = "petclinic.owner", percentiles = {0.95, 0.99, 0.9999 }, histogram = true)
+@Timed(value = "petclinic.owner.resource", histogram = true)
 @Slf4j
 class OwnerResource {
 
